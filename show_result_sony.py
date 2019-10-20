@@ -2,7 +2,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from network import SeeInDarkNet
-from raw_image_dataset import RawImageDatasetSony,gt_2_cv
+from raw_image_dataset import RawImageDatasetSony_Memory,gt_2_cv
 import cfg_sony as cfg
 import os
 import cv2
@@ -14,9 +14,9 @@ if __name__=='__main__':
     device=torch.device("cuda" if use_cuda else "cpu")
     print('device:',device)
 
-    train_dataset=RawImageDatasetSony(cfg.train_input_dir,cfg.train_gt_dir,crop_size=1024)
+    dataset=RawImageDatasetSony_Memory(cfg.input_dir,cfg.gt_dir,crop_size=1024,phase='test')
 
-    train_loader = torch.utils.data.DataLoader(train_dataset,
+    data_loader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1, shuffle=False,
                                             num_workers=1, pin_memory=True)
 
@@ -31,7 +31,7 @@ if __name__=='__main__':
 
     model.eval()
 
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for batch_idx, (data, target) in enumerate(data_loader):
         data, target = data.to(device), target.to(device)
 
         output = model(data)

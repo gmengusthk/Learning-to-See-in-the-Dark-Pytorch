@@ -1,8 +1,8 @@
 import os
 
 #data config
-train_input_dir = '/home/gtmeng/guotaofiles/research/Learning-to-See-in-the-Dark/dataset/Sony/short/'
-train_gt_dir = '/home/gtmeng/guotaofiles/research/Learning-to-See-in-the-Dark/dataset/Sony/long/'
+input_dir = '/home/gtmeng/guotaofiles/research/Learning-to-See-in-the-Dark/dataset/Sony/short/'
+gt_dir = '/home/gtmeng/guotaofiles/research/Learning-to-See-in-the-Dark/dataset/Sony/long/'
 train_crop_size=256
 
 

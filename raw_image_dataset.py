@@ -44,7 +44,7 @@ def gt_2_cv(gt_tensor):
 
 
 class RawImageDatasetSony_Memory(torch_data.Dataset):
-    def __init__(self,input_dir,gt_dir,crop_size=256):
+    def __init__(self,input_dir,gt_dir,crop_size=256,phase='train'):
         super(RawImageDatasetSony_Memory).__init__()
 
         self.input_dir=input_dir
@@ -52,23 +52,26 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         # if crop_size=-1, output the image in original size 
         self.crop_size=crop_size
 
-        train_fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
-        self.train_ids = [int(os.path.basename(train_fn)[0:5]) for train_fn in train_fns]
+        if phase is 'train':
+            fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
+        else:
+            fns = glob.glob(os.path.join(gt_dir,'1*.ARW'))
+        self.ids = [int(os.path.basename(fn)[0:5]) for fn in fns]
 
         self.in_files_list=[]
         self.gt_files_list=[]
 
-        for train_id in self.train_ids:
-            self.in_files_list.append(glob.glob(os.path.join(self.input_dir,'%05d_00*.ARW' % train_id)))
-            self.gt_files_list.append(glob.glob(os.path.join(gt_dir,'%05d_00*.ARW' % train_id))[0])
+        for file_id in self.ids:
+            self.in_files_list.append(glob.glob(os.path.join(self.input_dir,'%05d_00*.ARW' % file_id)))
+            self.gt_files_list.append(glob.glob(os.path.join(gt_dir,'%05d_00*.ARW' % file_id))[0])
 
 
         # Raw data takes long time to load. Keep them in memory after loaded.
-        self.gt_images = [None] * len(self.train_ids)
+        self.gt_images = [None] * len(self.ids)
         self.input_images = {}
-        self.input_images[300] = [None] * len(self.train_ids)
-        self.input_images[250] = [None] * len(self.train_ids)
-        self.input_images[100] = [None] * len(self.train_ids)
+        self.input_images[300] = [None] * len(self.ids)
+        self.input_images[250] = [None] * len(self.ids)
+        self.input_images[100] = [None] * len(self.ids)
 
     def __getitem__(self,index):
         in_files=self.in_files_list[index]
@@ -128,11 +131,11 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         return input_patch_torch,gt_patch_torch
     
     def __len__(self):
-        return len(self.train_ids)
+        return len(self.ids)
 
 
 class RawImageDatasetSony(torch_data.Dataset):
-    def __init__(self,input_dir,gt_dir,crop_size=256):
+    def __init__(self,input_dir,gt_dir,crop_size=256,phase='train'):
         super(RawImageDatasetSony).__init__()
 
         self.input_dir=input_dir
@@ -140,15 +143,18 @@ class RawImageDatasetSony(torch_data.Dataset):
         # if crop_size=-1, output the image in original size
         self.crop_size=crop_size
 
-        train_fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
-        self.train_ids = [int(os.path.basename(train_fn)[0:5]) for train_fn in train_fns]
+        if phase is 'train':
+            fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
+        else:
+            fns = glob.glob(os.path.join(gt_dir,'1*.ARW'))
+        self.ids = [int(os.path.basename(fn)[0:5]) for fn in fns]
 
         self.in_files_list=[]
         self.gt_files_list=[]
 
-        for train_id in self.train_ids:
-            self.in_files_list.append(glob.glob(os.path.join(self.input_dir,'%05d_00*.ARW' % train_id)))
-            self.gt_files_list.append(glob.glob(os.path.join(gt_dir,'%05d_00*.ARW' % train_id))[0])
+        for file_id in self.ids:
+            self.in_files_list.append(glob.glob(os.path.join(self.input_dir,'%05d_00*.ARW' % file_id)))
+            self.gt_files_list.append(glob.glob(os.path.join(gt_dir,'%05d_00*.ARW' % file_id))[0])
 
     def __getitem__(self,index):
         in_files=self.in_files_list[index]
@@ -202,7 +208,7 @@ class RawImageDatasetSony(torch_data.Dataset):
         return input_patch_torch,gt_patch_torch
     
     def __len__(self):
-        return len(self.train_ids)
+        return len(self.ids)
 
 
 

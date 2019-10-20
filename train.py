@@ -6,7 +6,9 @@ from raw_image_dataset import RawImageDatasetSony
 import cfg_sony as cfg
 import os
 
-def train(model, device, train_loader, loss_function, optimizer, epoch):
+from torch.utils.tensorboard import SummaryWriter
+
+def train(model, device, train_loader, loss_function, optimizer, epoch, tb_writer):
     model.train()
 
     batch_num=len(train_loader)
@@ -25,6 +27,8 @@ def train(model, device, train_loader, loss_function, optimizer, epoch):
 
         loss_acc+=loss.item()
         sample_cnt+=1
+
+        tb_writer.add_scalar('Loss/loss', loss, (epoch-1)*len(train_loader)+batch_idx)
 
         if (batch_idx+1) % cfg.log_interval == 0:
             loss_avg=loss_acc/sample_cnt
@@ -48,7 +52,7 @@ if __name__=='__main__':
     device=torch.device("cuda" if use_cuda else "cpu")
     print('device:',device)
 
-    train_dataset=RawImageDatasetSony(cfg.train_input_dir,cfg.train_gt_dir)
+    train_dataset=RawImageDatasetSony(cfg.input_dir,cfg.gt_dir,crop_size=cfg.train_crop_size)
 
     train_loader = torch.utils.data.DataLoader(train_dataset,
                                             batch_size=cfg.train_batch_size, shuffle=True,
@@ -67,8 +71,10 @@ if __name__=='__main__':
     # optimizer=optim.SGD(model.parameters(), lr=cfg.base_lr, momentum=cfg.momentum)
     optimizer=optim.Adam(model.parameters(), lr=cfg.base_lr)
 
+    tb_writer = SummaryWriter()
+
     for epoch in range(cfg.start_epoch, cfg.total_epochs + 1):
-        train(model, device, train_loader, loss_function, optimizer, epoch)
+        train(model, device, train_loader, loss_function, optimizer, epoch, tb_writer)
 
         if epoch in cfg.lr_decay_epochs:
             for param_group in optimizer.param_groups:
