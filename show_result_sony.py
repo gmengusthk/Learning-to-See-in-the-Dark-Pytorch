@@ -24,7 +24,7 @@ if __name__=='__main__':
     model = SeeInDarkNet()
     model=model.to(device)
 
-    snapshot_path='./sony_snapshots/model_00500.pth'
+    snapshot_path='./sony_snapshots/model_00050.pth'
     model.load_state_dict(torch.load(snapshot_path))
 
     image_write_dir='./viz'

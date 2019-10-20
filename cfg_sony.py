@@ -15,14 +15,17 @@ momentum=0.9
 total_epochs=2000
 lr_decay_epochs=[1000,1500]
 lr_decay_rate=0.1
-model_save_interval=100
+model_save_interval=50
 model_save_path='./sony_snapshots'
 log_interval=4
 
-start_epoch=501
+start_epoch=1
 
 for epoch in lr_decay_epochs:
     if epoch<=start_epoch:
         base_lr*=lr_decay_rate
 
-snapshot_path=os.path.join(model_save_path,'model_%05d.pth'%(start_epoch-1))
+if start_epoch>1:
+    snapshot_path=os.path.join(model_save_path,'model_%05d.pth'%(start_epoch-1))
+else:
+    snapshot_path=None

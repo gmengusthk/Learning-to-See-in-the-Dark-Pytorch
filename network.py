@@ -43,7 +43,8 @@ class SeeInDarkNet(nn.Module):
 
         self.conv_10=conv2d(32,12,kernel_size=1,stride=1,use_bn=use_bn)
 
-        self.depth_to_space=DepthToSpace(2)
+        self.depth_to_space=nn.PixelShuffle(2)
+        # self.depth_to_space=DepthToSpace(2)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
