@@ -38,6 +38,7 @@ def gt_2_cv(gt_tensor):
     gt_tensor_numpy=gt_tensor.numpy()
     gt_tensor_numpy=gt_tensor_numpy.transpose(1,2,0)
     gt_tensor_numpy=np.clip(gt_tensor_numpy*255.0,0,255)
+    gt_tensor_numpy = gt_tensor_numpy[:,:,[2,1,0]]
     gt_tensor_numpy=np.uint8(gt_tensor_numpy)
     return gt_tensor_numpy
 
@@ -107,8 +108,12 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         if self.crop_size>0:
             H,W=input_full_size_image.shape[1:3]
 
-            xx=np.random.randint(0, W-self.crop_size)
-            yy=np.random.randint(0, H-self.crop_size)
+            if self.phase=='train':
+                xx=np.random.randint(0, W-self.crop_size)
+                yy=np.random.randint(0, H-self.crop_size)
+            else:
+                xx=0
+                yy=0
 
             input_patch=input_full_size_image[:, yy:yy + self.crop_size, xx:xx + self.crop_size]
             gt_patch=gt_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
@@ -127,21 +132,22 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         input_patch = np.minimum(input_patch, 1.0)
 
         # random flip and transpose
-        if np.random.randint(2)==1:
-            input_patch = np.flip(input_patch, axis=1)
-            gt_patch = np.flip(gt_patch, axis=1)
-            if self.phase=='test':
-                raw_patch = np.flip(raw_patch, axis=1)
-        if np.random.randint(2)==1:
-            input_patch = np.flip(input_patch, axis=2)
-            gt_patch = np.flip(gt_patch, axis=2)
-            if self.phase=='test':
-                raw_patch = np.flip(raw_patch, axis=2)
-        if np.random.randint(2)==1:
-            input_patch = np.transpose(input_patch, (0, 2, 1))
-            gt_patch = np.transpose(gt_patch, (0, 2, 1))
-            if self.phase=='test':
-                raw_patch = np.transpose(raw_patch, (0, 2, 1))
+        if self.phase=='train':
+            if np.random.randint(2)==1:
+                input_patch = np.flip(input_patch, axis=1)
+                gt_patch = np.flip(gt_patch, axis=1)
+                if self.phase=='test':
+                    raw_patch = np.flip(raw_patch, axis=1)
+            if np.random.randint(2)==1:
+                input_patch = np.flip(input_patch, axis=2)
+                gt_patch = np.flip(gt_patch, axis=2)
+                if self.phase=='test':
+                    raw_patch = np.flip(raw_patch, axis=2)
+            if np.random.randint(2)==1:
+                input_patch = np.transpose(input_patch, (0, 2, 1))
+                gt_patch = np.transpose(gt_patch, (0, 2, 1))
+                if self.phase=='test':
+                    raw_patch = np.transpose(raw_patch, (0, 2, 1))
         
         input_patch=np.ascontiguousarray(input_patch)
         gt_patch=np.ascontiguousarray(gt_patch)
@@ -210,8 +216,12 @@ class RawImageDatasetSony(torch_data.Dataset):
         if self.crop_size>0:
             H,W=input_full_size_image.shape[1:3]
 
-            xx=np.random.randint(0, W-self.crop_size)
-            yy=np.random.randint(0, H-self.crop_size)
+            if self.phase=='train':
+                xx=np.random.randint(0, W-self.crop_size)
+                yy=np.random.randint(0, H-self.crop_size)
+            else:
+                xx=0
+                yy=0
 
             input_patch=input_full_size_image[:, yy:yy + self.crop_size, xx:xx + self.crop_size]
             gt_patch=gt_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
@@ -229,22 +239,23 @@ class RawImageDatasetSony(torch_data.Dataset):
         input_patch = np.minimum(input_patch, 1.0)
 
         # random flip and transpose
-        if np.random.randint(2)==1:
-            input_patch = np.flip(input_patch, axis=1)
-            gt_patch = np.flip(gt_patch, axis=1)
-            if self.phase=='test':
-                raw_patch = np.flip(raw_patch, axis=1)
-        if np.random.randint(2)==1:
-            input_patch = np.flip(input_patch, axis=2)
-            gt_patch = np.flip(gt_patch, axis=2)
-            if self.phase=='test':
-                raw_patch = np.flip(raw_patch, axis=2)
-        if np.random.randint(2)==1:
-            input_patch = np.transpose(input_patch, (0, 2, 1))
-            gt_patch = np.transpose(gt_patch, (0, 2, 1))
-            if self.phase=='test':
-                raw_patch = np.transpose(raw_patch, (0, 2, 1))
-        
+        if self.phase=='train':
+            if np.random.randint(2)==1:
+                input_patch = np.flip(input_patch, axis=1)
+                gt_patch = np.flip(gt_patch, axis=1)
+                if self.phase=='test':
+                    raw_patch = np.flip(raw_patch, axis=1)
+            if np.random.randint(2)==1:
+                input_patch = np.flip(input_patch, axis=2)
+                gt_patch = np.flip(gt_patch, axis=2)
+                if self.phase=='test':
+                    raw_patch = np.flip(raw_patch, axis=2)
+            if np.random.randint(2)==1:
+                input_patch = np.transpose(input_patch, (0, 2, 1))
+                gt_patch = np.transpose(gt_patch, (0, 2, 1))
+                if self.phase=='test':
+                    raw_patch = np.transpose(raw_patch, (0, 2, 1))
+            
         input_patch=np.ascontiguousarray(input_patch)
         gt_patch=np.ascontiguousarray(gt_patch)
         input_patch_torch=torch.from_numpy(input_patch)

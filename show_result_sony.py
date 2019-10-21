@@ -59,7 +59,7 @@ if __name__=='__main__':
 
 
             target_write_path=os.path.join(image_write_dir,'image_%03d_%2d_gt.png'%(batch_idx,b_idx))
-            output_write_path=os.path.join(image_write_dir,'image_%03d_%2d_output.png'%(batch_idx,b_idx))
+            output_write_path=os.path.join(image_write_dir,'image_%03d_%2d_output_%05d.png'%(batch_idx,b_idx,args.epoch))
             raw_image_write_path=os.path.join(image_write_dir,'image_%03d_%2d_raw.png'%(batch_idx,b_idx))
             cv2.imwrite(target_write_path,target_frame_cv)
             cv2.imwrite(output_write_path,output_frame_cv)
