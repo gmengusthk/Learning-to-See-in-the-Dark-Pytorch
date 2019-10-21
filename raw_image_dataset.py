@@ -51,8 +51,9 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         self.gt_dir=gt_dir
         # if crop_size=-1, output the image in original size 
         self.crop_size=crop_size
+        self.phase=phase
 
-        if phase is 'train':
+        if self.phase is 'train':
             fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
         else:
             fns = glob.glob(os.path.join(gt_dir,'1*.ARW'))
@@ -95,6 +96,12 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         
         input_full_size_image=self.input_images[int(exposure_ratio)][index]
         gt_full_size_image=self.gt_images[index]
+
+        if self.phase=='test':
+            in_raw=rawpy.imread(in_path)
+            raw_im=in_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
+            raw_im=raw_im.transpose(2,0,1)
+            raw_full_size_image=np.float32(raw_im / 65535.0)
         
         # crop
         if self.crop_size>0:
@@ -105,9 +112,16 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
 
             input_patch=input_full_size_image[:, yy:yy + self.crop_size, xx:xx + self.crop_size]
             gt_patch=gt_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
+
+            if self.phase=='test':
+                raw_patch=raw_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
+
         else:
             input_patch=input_full_size_image
             gt_patch=gt_full_size_image
+            
+            if self.phase=='test':
+                raw_patch=raw_full_size_image
 
 
         input_patch = np.minimum(input_patch, 1.0)
@@ -116,19 +130,31 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
         if np.random.randint(2)==1:
             input_patch = np.flip(input_patch, axis=1)
             gt_patch = np.flip(gt_patch, axis=1)
+            if self.phase=='test':
+                raw_patch = np.flip(raw_patch, axis=1)
         if np.random.randint(2)==1:
             input_patch = np.flip(input_patch, axis=2)
             gt_patch = np.flip(gt_patch, axis=2)
+            if self.phase=='test':
+                raw_patch = np.flip(raw_patch, axis=2)
         if np.random.randint(2)==1:
             input_patch = np.transpose(input_patch, (0, 2, 1))
             gt_patch = np.transpose(gt_patch, (0, 2, 1))
+            if self.phase=='test':
+                raw_patch = np.transpose(raw_patch, (0, 2, 1))
         
         input_patch=np.ascontiguousarray(input_patch)
         gt_patch=np.ascontiguousarray(gt_patch)
         input_patch_torch=torch.from_numpy(input_patch)
         gt_patch_torch=torch.from_numpy(gt_patch)
+        if self.phase=='test':
+            raw_patch=np.ascontiguousarray(raw_patch)
+            raw_patch=torch.from_numpy(raw_patch)
 
-        return input_patch_torch,gt_patch_torch
+        if self.phase=='train':
+            return input_patch_torch,gt_patch_torch
+        else:
+            return input_patch_torch,gt_patch_torch,raw_patch
     
     def __len__(self):
         return len(self.ids)
@@ -142,8 +168,9 @@ class RawImageDatasetSony(torch_data.Dataset):
         self.gt_dir=gt_dir
         # if crop_size=-1, output the image in original size
         self.crop_size=crop_size
+        self.phase=phase
 
-        if phase is 'train':
+        if self.phase is 'train':
             fns = glob.glob(os.path.join(gt_dir,'0*.ARW'))
         else:
             fns = glob.glob(os.path.join(gt_dir,'1*.ARW'))
@@ -168,6 +195,11 @@ class RawImageDatasetSony(torch_data.Dataset):
         in_raw=rawpy.imread(in_path)
         input_full_size_image=pack_raw(in_raw)*exposure_ratio
 
+        if self.phase=='test':
+            raw_im=in_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
+            raw_im=raw_im.transpose(2,0,1)
+            raw_full_size_image=np.float32(raw_im / 65535.0)
+
         gt_raw=rawpy.imread(gt_path)
         gt_im=gt_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
         gt_im=gt_im.transpose(2,0,1)
@@ -183,9 +215,16 @@ class RawImageDatasetSony(torch_data.Dataset):
 
             input_patch=input_full_size_image[:, yy:yy + self.crop_size, xx:xx + self.crop_size]
             gt_patch=gt_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
+
+            if self.phase=='test':
+                raw_patch=raw_full_size_image[:, 2*yy:2*yy+2*self.crop_size, 2*xx:2*xx+2*self.crop_size]
+
         else:
             input_patch=input_full_size_image
             gt_patch=gt_full_size_image
+            
+            if self.phase=='test':
+                raw_patch=raw_full_size_image
 
         input_patch = np.minimum(input_patch, 1.0)
 
@@ -193,19 +232,31 @@ class RawImageDatasetSony(torch_data.Dataset):
         if np.random.randint(2)==1:
             input_patch = np.flip(input_patch, axis=1)
             gt_patch = np.flip(gt_patch, axis=1)
+            if self.phase=='test':
+                raw_patch = np.flip(raw_patch, axis=1)
         if np.random.randint(2)==1:
             input_patch = np.flip(input_patch, axis=2)
             gt_patch = np.flip(gt_patch, axis=2)
+            if self.phase=='test':
+                raw_patch = np.flip(raw_patch, axis=2)
         if np.random.randint(2)==1:
             input_patch = np.transpose(input_patch, (0, 2, 1))
             gt_patch = np.transpose(gt_patch, (0, 2, 1))
+            if self.phase=='test':
+                raw_patch = np.transpose(raw_patch, (0, 2, 1))
         
         input_patch=np.ascontiguousarray(input_patch)
         gt_patch=np.ascontiguousarray(gt_patch)
         input_patch_torch=torch.from_numpy(input_patch)
         gt_patch_torch=torch.from_numpy(gt_patch)
+        if self.phase=='test':
+            raw_patch=np.ascontiguousarray(raw_patch)
+            raw_patch=torch.from_numpy(raw_patch)
 
-        return input_patch_torch,gt_patch_torch
+        if self.phase=='train':
+            return input_patch_torch,gt_patch_torch
+        else:
+            return input_patch_torch,gt_patch_torch,raw_patch
     
     def __len__(self):
         return len(self.ids)
