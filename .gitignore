@@ -3,3 +3,4 @@ viz/*
 sony_snapshots/*
 runs
 __pycache__
+.vscode

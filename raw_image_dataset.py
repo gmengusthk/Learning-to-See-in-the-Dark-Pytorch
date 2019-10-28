@@ -129,25 +129,20 @@ class RawImageDatasetSony_Memory(torch_data.Dataset):
                 raw_patch=raw_full_size_image
 
 
-        input_patch = np.minimum(input_patch, 1.0)
+        input_patch=np.minimum(input_patch, 1.0)
+        gt_patch=np.minimum(gt_patch, 1.0)
 
         # random flip and transpose
         if self.phase=='train':
             if np.random.randint(2)==1:
                 input_patch = np.flip(input_patch, axis=1)
                 gt_patch = np.flip(gt_patch, axis=1)
-                if self.phase=='test':
-                    raw_patch = np.flip(raw_patch, axis=1)
             if np.random.randint(2)==1:
                 input_patch = np.flip(input_patch, axis=2)
                 gt_patch = np.flip(gt_patch, axis=2)
-                if self.phase=='test':
-                    raw_patch = np.flip(raw_patch, axis=2)
             if np.random.randint(2)==1:
                 input_patch = np.transpose(input_patch, (0, 2, 1))
                 gt_patch = np.transpose(gt_patch, (0, 2, 1))
-                if self.phase=='test':
-                    raw_patch = np.transpose(raw_patch, (0, 2, 1))
         
         input_patch=np.ascontiguousarray(input_patch)
         gt_patch=np.ascontiguousarray(gt_patch)
